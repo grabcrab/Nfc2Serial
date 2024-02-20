@@ -10,16 +10,16 @@ NfcAdapter::~NfcAdapter(void)
     delete shield;
 }
 
-void NfcAdapter::begin(boolean verbose)
-{
+bool NfcAdapter::begin(boolean verbose)
+{    
     shield->begin();
 
     uint32_t versiondata = shield->getFirmwareVersion();
 
     if (! versiondata)
     {
-        Serial.print(F("Didn't find PN53x board"));
-        while (1); // halt
+        Serial.print(F("Didn't find PN53x board"));        
+        return false;
     }
 
     if (verbose)
@@ -30,6 +30,7 @@ void NfcAdapter::begin(boolean verbose)
     }
     // configure board to read RFID tags
     shield->SAMConfig();
+    return true;
 }
 
 boolean NfcAdapter::tagPresent(unsigned long timeout)
@@ -102,7 +103,7 @@ boolean NfcAdapter::clean()
 
 
 NfcTag NfcAdapter::read()
-{
+{    
     uint8_t type = guessTagType();
 
     if (type == TAG_TYPE_MIFARE_CLASSIC)

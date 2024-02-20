@@ -265,6 +265,12 @@ void NdefRecord::getPayload(byte *payload)
     memcpy(payload, _payload, _payloadLength);
 }
 
+void NdefRecord::getPayload(byte *payload, byte &payloadSize)
+{
+    memcpy(payload, _payload, _payloadLength);
+    payloadSize = _payloadLength;
+}
+
 void NdefRecord::setPayload(const byte * payload, const int numBytes)
 {
     if (_payloadLength)

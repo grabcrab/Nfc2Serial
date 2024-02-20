@@ -23,28 +23,33 @@ MifareUltralight::~MifareUltralight()
 
 NfcTag MifareUltralight::read(byte * uid, unsigned int uidLength)
 {
+    //Serial.println(">>>111");
     if (isUnformatted())
     {
         Serial.println(F("WARNING: Tag is not formatted."));
         return NfcTag(uid, uidLength, NFC_FORUM_TAG_TYPE_2);
     }
-
+    //Serial.println(">>>222");
     readCapabilityContainer(); // meta info for tag
+    //Serial.println(">>>2222222222");
     findNdefMessage();
+    //Serial.println(">>>3333333333");
     calculateBufferSize();
+    //Serial.println(">>>333");
 
     if (messageLength == 0) { // data is 0x44 0x03 0x00 0xFE
         NdefMessage message = NdefMessage();
         message.addEmptyRecord();
         return NfcTag(uid, uidLength, NFC_FORUM_TAG_TYPE_2, message);
     }
-
+    //Serial.println(">>>444");
     boolean success;
     uint8_t page;
     uint8_t index = 0;
     byte buffer[bufferSize];
     for (page = ULTRALIGHT_DATA_START_PAGE; page < ULTRALIGHT_MAX_PAGE; page++)
     {
+        //Serial.println(">>>555");
         // read the data
         success = nfc->mifareultralight_ReadPage(page, &buffer[index]);
         if (success)
@@ -69,8 +74,9 @@ NfcTag MifareUltralight::read(byte * uid, unsigned int uidLength)
 
         index += ULTRALIGHT_PAGE_SIZE;
     }
-
+    //Serial.println(">>>66");
     NdefMessage ndefMessage = NdefMessage(&buffer[ndefStartIndex], messageLength);
+    //Serial.println(">>>777");
     return NfcTag(uid, uidLength, NFC_FORUM_TAG_TYPE_2, ndefMessage);
 
 }
@@ -95,7 +101,9 @@ boolean MifareUltralight::isUnformatted()
 void MifareUltralight::readCapabilityContainer()
 {
     byte data[ULTRALIGHT_PAGE_SIZE];
+    //Serial.println("***100");
     int success = nfc->mifareultralight_ReadPage (3, data);
+    //Serial.println("***200");
     if (success)
     {
         // See AN1303 - different rules for Mifare Family byte2 = (additional data + 48)/8
@@ -119,6 +127,7 @@ void MifareUltralight::findNdefMessage()
     boolean success = true;
     for (page = 4; page < 6; page++)
     {
+        //Serial.printf("###%d\r\n", page);
         success = success && nfc->mifareultralight_ReadPage(page, data_ptr);
         #ifdef MIFARE_ULTRALIGHT_DEBUG
         Serial.print(F("Page "));Serial.print(page);Serial.print(F(" - "));

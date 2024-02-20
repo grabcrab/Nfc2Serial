@@ -32,6 +32,7 @@ class NdefRecord
         byte getTnf();
         void getType(byte *type);
         void getPayload(byte *payload);
+        void getPayload(byte *payload, byte &payloadSize);
         void getId(byte *id);
 
         // convenience methods

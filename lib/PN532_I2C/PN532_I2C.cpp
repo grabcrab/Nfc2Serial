@@ -17,7 +17,7 @@ PN532_I2C::PN532_I2C(TwoWire &wire)
 
 void PN532_I2C::begin()
 {
-    _wire->begin(19,18,100000);
+    _wire->begin(PIN_NFC_SDA, PIN_NFC_SCL, I2C_FREQ);
 }
 
 void PN532_I2C::wakeup()
@@ -189,6 +189,7 @@ int16_t PN532_I2C::readResponse(uint8_t buf[], uint8_t len, uint16_t timeout)
 
 int8_t PN532_I2C::readAckFrame()
 {
+    uint32_t startMs = millis();
     const uint8_t PN532_ACK[] = {0, 0, 0xFF, 0, 0xFF, 0};
     uint8_t ackBuf[sizeof(PN532_ACK)];
     
@@ -198,14 +199,18 @@ int8_t PN532_I2C::readAckFrame()
     
     uint16_t time = 0;
     do {
-        if (_wire->requestFrom(PN532_I2C_ADDRESS,  sizeof(PN532_ACK) + 1)) {
+        delay(1);
+        if (_wire->requestFrom(PN532_I2C_ADDRESS,  sizeof(PN532_ACK) + 1)) 
+        {   
+            //Serial.println("<<<<1>>>>>");
             if (read() & 1) {  // check first byte --- status
                 break;         // PN532 is ready
             }
+            //Serial.println("<<<<2>>>>>");
         }
-
+        DMSG("**********>>(");  DMSG(millis()-startMs); DMSG("ms)\r\n");
         delay(1);
-        DMSG_STR(time);
+        
         time++;
         if (time > PN532_ACK_WAIT_TIME) {
             DMSG("Time out when waiting for ACK\n");
@@ -217,6 +222,7 @@ int8_t PN532_I2C::readAckFrame()
     DMSG(millis());
     DMSG('\n');
     
+    DMSG("-----=-->>(");  DMSG(millis()-startMs); DMSG("ms)\r\n");
 
     for (uint8_t i = 0; i < sizeof(PN532_ACK); i++) {
         ackBuf[i] = read();
@@ -226,6 +232,6 @@ int8_t PN532_I2C::readAckFrame()
         DMSG("Invalid ACK\n");
         return PN532_INVALID_ACK;
     }
-    DMSG("<<-->>");
+    DMSG("<<-->>(");  DMSG(millis()-startMs); DMSG("ms)\r\n");
     return 0;
 }
